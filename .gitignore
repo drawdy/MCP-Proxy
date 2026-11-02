@@ -1,0 +1,7 @@
+/config.json
+/.env
+/workspace/*
+!/workspace/.gitkeep
+/bin/
+/dist/
+*.log

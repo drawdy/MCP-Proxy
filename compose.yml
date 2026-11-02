@@ -1,0 +1,49 @@
+services:
+  mcp-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: drawdy/mcp-proxy:local
+    init: true
+    restart: unless-stopped
+    command:
+      - --config
+      - /etc/mcp-proxy/config.json
+      - --host
+      - 0.0.0.0
+      - --port
+      - "3006"
+      - --sse-path
+      - /sse
+      - --health-endpoint
+      - /healthz
+      - --health-endpoint
+      - /readyz
+    environment:
+      NPM_CONFIG_CACHE: /home/mcp/.npm
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "${MCP_PROXY_BIND:-127.0.0.1}:${MCP_PROXY_PORT:-3006}:3006"
+    volumes:
+      - ./config.json:/etc/mcp-proxy/config.json:ro
+      - ./workspace:/workspace
+      - npm-cache:/home/mcp/.npm
+    tmpfs:
+      - /tmp
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 20s
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3006/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  npm-cache:

@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+    paths-ignore: ["**/*.md", "docs/**", "LICENSE"]
+  pull_request:
+    paths-ignore: ["**/*.md", "docs/**", "LICENSE"]
+  workflow_dispatch:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go test ./...
+      - run: go test -race ./...
+      - run: go vet ./...
+
+  docker:
+    if: contains(github.event.head_commit.message || '', '[docker]') || github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t mcp-proxy:ci .
+      - run: cp config.example.json config.json && docker compose -f compose.yml config

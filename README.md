@@ -4,9 +4,10 @@ A lightweight Go-based MCP proxy that exposes multiple backend MCP servers throu
 
 ## Features
 
-- Aggregate tools and resources from multiple MCP backends.
+- Aggregate tools, prompts, resources, and resource templates from multiple MCP backends.
 - Isolate backend names using the `backend.tool` naming convention.
-- Give every frontend SSE connection its own MCP server session.
+- Give every frontend SSE connection its own MCP server session and capability registry.
+- Update connected clients through SDK list-changed notifications when backend capabilities change.
 - Share backend connections and reconnect them with exponential backoff.
 - Support stdio, legacy SSE, and Streamable HTTP backends.
 - Expand environment variables in configuration values.
@@ -85,7 +86,11 @@ make build
 
 ## Compatibility and scope
 
-The initial release focuses on the traditional SSE frontend used by MCP-Interceptor. Backend connections support stdio, SSE, and Streamable HTTP. Prompts, resource templates, dynamic capability notifications, and broader protocol translation remain follow-up work.
+The frontend uses the official Go MCP SDK's traditional SSE transport. Existing sessions receive tool, prompt, and resource list-changed notifications; resource template changes use the resource notification. Backend connections support stdio, SSE, and Streamable HTTP. A disconnected backend's capabilities are removed and restored after reconnect. Failed rediscovery preserves the last successful list for each capability type and retries automatically.
+
+Tools and prompts use `backend.name`. Tool names requiring normalization or truncation receive a deterministic SHA-256 suffix (maximum 128 ASCII characters); names containing the reserved `--` marker are also rewritten to avoid collisions. Resources and templates use `mcp-proxy-<hex backend name>:<original URI>`, preserving the original scheme and RFC 6570 expressions. Read results use the proxy URI as well. Clients should use the advertised names and URIs.
+
+Integration tests cover ten concurrent SSE clients, independent registries, live capability changes, backend failure/recovery, initialization races, and watcher cleanup. `TestLegacySSEWireCompatibility` independently verifies endpoint events, distinct SDK `sessionid` query parameters, POST messages, MCP initialize, tools/list, tools/call, and tools/list_changed over HTTP/SSE. See [validation notes](docs/dynamic-capabilities-validation.md). A live MCP-Interceptor Chrome extension session has not been verified in this development environment.
 
 ## License
 

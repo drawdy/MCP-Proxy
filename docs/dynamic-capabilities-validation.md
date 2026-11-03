@@ -1,6 +1,6 @@
 # Dynamic capability aggregation validation
 
-Date: 2026-11-02 (Asia/Shanghai). SDK: github.com/modelcontextprotocol/go-sdk v1.8.0.
+Date: 2026-11-03 (Asia/Shanghai). SDK: github.com/modelcontextprotocol/go-sdk v1.8.0.
 
 ## Reproduce
 
@@ -26,6 +26,7 @@ The tests use isolated localhost listeners, in-memory transports, and temporary 
 - Rediscovery errors retain the last successful capability list; initial failures retry without another notification. Identical rediscovery emits no change. Old sessions cannot mutate or clear the current state. Notifications arriving during initial discovery are retained.
 - Illegal, Unicode, long, and colliding tool names remain deterministic, valid, distinct, and route to the original backend names.
 - An independent raw HTTP/SSE test checks endpoint events, distinct message endpoints, POST 202 responses, legacy initialize (2024-11-05), tools/list, tools/call, and notifications/tools/list_changed. SDK v1.8.0 spells its session query parameter `sessionid` (lowercase); the proxy preserves the SDK endpoint verbatim.
+- The same raw HTTP/SSE test calls a backend tool that returns mixed text/image/text content and verifies the image MIME type, Base64 payload, and content-block order survive the proxy unchanged.
 
 ## Remaining validation
 

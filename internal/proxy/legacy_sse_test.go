@@ -3,6 +3,7 @@ package proxy
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -19,6 +20,17 @@ import (
 // The production transport and all JSON-RPC dispatch still belong to the SDK.
 func TestLegacySSEWireCompatibility(t *testing.T) {
 	b := richBackend()
+	imageBytes, err := base64.StdEncoding.DecodeString("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/pWQAAAAASUVORK5CYII=")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.AddTool(&mcp.Tool{Name: "image", InputSchema: json.RawMessage(`{"type":"object"}`)}, func(context.Context, *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		return &mcp.CallToolResult{Content: []mcp.Content{
+			&mcp.TextContent{Text: "image-start"},
+			&mcp.ImageContent{Data: imageBytes, MIMEType: "image/png"},
+			&mcp.TextContent{Text: "image-end"},
+		}}, nil
+	})
 	h := backendHTTP(t, b)
 	_, endpoint := newTestProxy(t, map[string]config.ServerConfig{"demo": {Type: "sse", URL: h.URL}})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -129,6 +141,25 @@ func TestLegacySSEWireCompatibility(t *testing.T) {
 	post(`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"demo.wire","arguments":{"text":"wire-ok"}}}`)
 	if !strings.Contains(fingerprintJSON(reply(3)), "wire-ok") {
 		t.Fatal("dynamic tool call failed")
+	}
+
+	// Image blocks must survive backend aggregation and the legacy SSE JSON wire format.
+	post(`{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"demo.image","arguments":{}}}`)
+	imageReply := reply(4)
+	imageResult := imageReply["result"].(map[string]any)
+	content := imageResult["content"].([]any)
+	if len(content) != 3 {
+		t.Fatalf("image result content blocks = %d, want 3", len(content))
+	}
+	if content[0].(map[string]any)["text"] != "image-start" || content[2].(map[string]any)["text"] != "image-end" {
+		t.Fatalf("mixed text/image order changed: %#v", content)
+	}
+	imageBlock := content[1].(map[string]any)
+	if imageBlock["type"] != "image" || imageBlock["mimeType"] != "image/png" {
+		t.Fatalf("image metadata changed: %#v", imageBlock)
+	}
+	if imageBlock["data"] != base64.StdEncoding.EncodeToString(imageBytes) {
+		t.Fatal("image Base64 payload changed in proxy response")
 	}
 }
 

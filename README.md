@@ -37,7 +37,7 @@ docker compose -f compose.yml down
 
 The default host binding is `127.0.0.1:3006`. Set `MCP_PROXY_BIND=0.0.0.0` in `.env` to expose it on network interfaces, and optionally set `MCP_PROXY_PORT`.
 
-The configuration is mounted read-only at `/etc/mcp-proxy/config.json`. Mount or place file-server data under `./workspace`. A named volume stores the npm cache for stdio servers launched through `npx`.
+The configuration is mounted read-only at `/etc/mcp-proxy/config.json`. Mount or place file-server data under `./workspace`. Named volumes store the npm cache and Desktop Commander runtime state (configuration, tool history, and logs). These paths remain writable with the read-only container root filesystem. `docker compose down` preserves the volumes; `docker compose down -v` removes them. Desktop Commander records tool arguments and recent result previews, so treat its state volumes as sensitive data.
 
 ## Configuration
 

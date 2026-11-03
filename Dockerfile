@@ -12,6 +12,8 @@ RUN apk add --no-cache ca-certificates tzdata openssh-client \
     && addgroup -S mcp \
     && adduser -S -G mcp -h /home/mcp mcp \
     && mkdir -p /etc/mcp-proxy /workspace /home/mcp/.npm \
+        /home/mcp/.claude-server-commander \
+        /home/mcp/.claude-server-commander-logs \
     && chown -R mcp:mcp /home/mcp /workspace
 
 COPY --from=builder /out/mcp-proxy /usr/local/bin/mcp-proxy

@@ -25,6 +25,7 @@ jobs:
               - 'go.mod'
               - 'go.sum'
             docker:
+              - '.github/workflows/ci.yml'
               - 'Dockerfile'
               - 'compose.yml'
               - '.dockerignore'
@@ -50,5 +51,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t mcp-proxy:ci .
-      - run: cp config.example.json config.json && docker compose -f compose.yml config
+      - run: printf '{"mcpServers":{}}\n' > config.json
+      - run: docker compose -f compose.yml config
+      - run: docker compose -f compose.yml up -d --build
+      - name: Verify writable runtime volumes
+        run: |
+          docker compose -f compose.yml exec -T mcp-proxy sh -ec '
+            test "$HOME" = "/home/mcp"
+            for dir in /home/mcp/.npm /home/mcp/.claude-server-commander /home/mcp/.claude-server-commander-logs; do
+              test -d "$dir" && test -w "$dir"
+              touch "$dir/.write-test" && rm "$dir/.write-test"
+            done
+          '
+      - if: always()
+        run: docker compose -f compose.yml down -v

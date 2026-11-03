@@ -92,7 +92,7 @@ make build
 
 工具和 Prompt 使用 `backend.name`。需要规范化或截断的工具名追加完整 SHA-256 摘要，长度不超过 128 个 ASCII 字符；包含保留标记 `--` 的名称也会转换，以避免冲突。资源及模板使用 `mcp-proxy-<后端名的十六进制>:<原始 URI>`，保留原 scheme 和 RFC 6570 表达式，读取结果也返回代理 URI。客户端应使用列表中实际公布的名称和 URI。
 
-集成测试覆盖十客户端并发、独立注册表、动态能力更新、后端故障恢复、初始化竞态及 watcher 释放。`TestLegacySSEWireCompatibility` 通过原始 HTTP/SSE 验证 endpoint event、SDK 的独立 `sessionid` 查询参数、POST 消息、MCP initialize、tools/list、tools/call 和 tools/list_changed。详见[验证记录](docs/dynamic-capabilities-validation.md)。当前开发环境尚未完成真实 MCP-Interceptor Chrome 扩展联调。
+集成测试覆盖十客户端并发、独立注册表、动态能力更新、后端故障恢复、初始化竞态及 watcher 释放。`TestLegacySSEWireCompatibility` 通过原始 HTTP/SSE 验证 endpoint event、SDK 的独立 `sessionid` 查询参数、POST 消息、MCP initialize、tools/list、tools/call、tools/list_changed，以及混合文本/图片的工具结果。图片测试验证 MIME 类型、Base64 数据和 content block 顺序均由代理原样传递。详见[验证记录](docs/dynamic-capabilities-validation.md)。当前开发环境尚未完成真实 MCP-Interceptor Chrome 扩展联调。
 
 ## 许可证
 

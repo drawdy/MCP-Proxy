@@ -39,7 +39,7 @@ docker compose -f compose.yml down
 
 默认只监听宿主机 `127.0.0.1:3006`。如需局域网访问，在 `.env` 中设置 `MCP_PROXY_BIND=0.0.0.0`，可通过 `MCP_PROXY_PORT` 修改宿主机端口。
 
-配置文件以只读方式挂载到容器内的 `/etc/mcp-proxy/config.json`。文件型 MCP Server 可访问宿主机项目目录下的 `workspace`。npm 缓存使用独立 Docker volume，避免只读文件系统和临时文件系统权限问题。
+配置文件以只读方式挂载到容器内的 `/etc/mcp-proxy/config.json`。文件型 MCP Server 可访问宿主机项目目录下的 `workspace`。npm 缓存以及 Desktop Commander 的配置、工具调用历史和日志分别使用独立 Docker volume，因此在容器根文件系统只读时仍可正常写入。`docker compose down` 会保留这些 volume，`docker compose down -v` 才会删除。Desktop Commander 会记录工具参数和近期结果预览，请将其状态 volume 视为敏感数据。
 
 ## 配置
 

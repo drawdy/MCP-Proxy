@@ -20,6 +20,7 @@ services:
       - --health-endpoint
       - /readyz
     environment:
+      HOME: /home/mcp
       NPM_CONFIG_CACHE: /home/mcp/.npm
     env_file:
       - path: .env
@@ -30,6 +31,8 @@ services:
       - ./config.json:/etc/mcp-proxy/config.json:ro
       - ./workspace:/workspace
       - npm-cache:/home/mcp/.npm
+      - desktop-commander-state:/home/mcp/.claude-server-commander
+      - desktop-commander-logs:/home/mcp/.claude-server-commander-logs
     tmpfs:
       - /tmp
     read_only: true
@@ -47,3 +50,5 @@ services:
 
 volumes:
   npm-cache:
+  desktop-commander-state:
+  desktop-commander-logs:

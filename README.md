@@ -84,6 +84,8 @@ make vet
 make build
 ```
 
+For a local backend with generated PNG/JPEG, text-only, and SVG results, see the [image-output manual test example](examples/image-test-server/README.md).
+
 ## Compatibility and scope
 
 The frontend uses the official Go MCP SDK's traditional SSE transport. Existing sessions receive tool, prompt, and resource list-changed notifications; resource template changes use the resource notification. Backend connections support stdio, SSE, and Streamable HTTP. A disconnected backend's capabilities are removed and restored after reconnect. Failed rediscovery preserves the last successful list for each capability type and retries automatically.

@@ -86,6 +86,8 @@ make vet
 make build
 ```
 
+本地图片输出联调可使用[图片测试后端示例](examples/image-test-server/README.md)，包含生成的 PNG/JPEG、纯文本和 SVG 返回。
+
 ## 当前范围
 
 前端使用官方 Go MCP SDK 的传统 SSE 实现，支持工具、Prompt、资源列表变更通知；Resource Template 变更使用资源列表通知。后端支持 stdio、SSE 和 Streamable HTTP。断线后撤除对应能力，重连后重新发现并恢复。重新发现某类能力失败时保留该类最近成功的列表，并自动重试。
